@@ -1,0 +1,2 @@
+# terraform-aws-architectures
+AWSの基本アーキテクチャのTerraform実装の学習用リポジトリ
