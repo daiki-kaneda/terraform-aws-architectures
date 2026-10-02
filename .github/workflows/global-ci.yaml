@@ -1,0 +1,64 @@
+name: Global Infrastructure CI
+
+on: 
+    pull_request:
+        branches: 
+            - main
+        paths:
+            - 'global/**'
+
+permissions:
+    id-token: write
+    contents: read
+    pull-requests: write
+
+env: 
+    ROLE_ARN: "arn:aws:iam::676206940596:role/GithubActions-ExcutionRole"
+    REGION: "ap-northeast-1"
+        
+jobs: 
+    plan:
+        defaults:
+            run:
+                working-directory: ./global
+        name: Check and Plan
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with: 
+                role-to-assume: "${{env.ROLE_ARN}}"
+                aws-region: "${{env.REGION}}"
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v4
+            - name: Terraform fmt
+              run: terraform fmt -check -diff
+            - name: Terraform Init
+              run: terraform init
+            - name: Terraform Validate
+              run: terraform validate -no-color
+            - name: Terraform Plan
+              id: plan
+              run: terraform plan -no-color
+              continue-on-error: true
+            - name: Comment PR
+              uses: actions/github-script@v7
+              env:
+                PLAN: "\n${{ steps.plan.outputs.stdout }}"
+              with:
+                github-token: ${{ secrets.GITHUB_TOKEN }}
+                script: |
+                    const output = `
+                    #### Terraform Plan
+                    ${process.env.PLAN}`;
+
+                    github.rest.issues.createComment({
+                    issue_number: context.issue.number,
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    body: output})
+            - name: Check Plan Status
+              if: steps.plan.outcome == 'failure'
+              run: exit 1
