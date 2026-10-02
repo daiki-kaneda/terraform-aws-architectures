@@ -13,8 +13,8 @@ permissions:
     pull-requests: write
 
 env: 
-    ROLE_ARN: "arn:aws:iam::676206940596:role/GithubActions-ExcutionRole"
-    REGION: "ap-northeast-1"
+    ROLE_ARN: vars.PLAN_ROLE_ARN
+    REGION: var.REGION
         
 jobs: 
     plan:
