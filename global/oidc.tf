@@ -68,8 +68,14 @@ resource "aws_iam_role_policy_attachment" "github" {
 ##################
 data "aws_iam_policy_document" "github_oidc_assume_role" {
   for_each = {
-    plan  = "pull_request"
-    apply = "ref:refs/heads/main"
+    plan = {
+      test   = "StringLike"
+      suffix = "*"
+    }
+    apply = {
+      test   = "StringEquals"
+      suffix = "ref:refs/heads/main"
+    }
   }
   statement {
     effect  = "Allow"
@@ -87,13 +93,13 @@ data "aws_iam_policy_document" "github_oidc_assume_role" {
     }
 
     condition {
-      test     = "StringEquals"
+      test     = each.value.test
       variable = "${local.github_hostname}:sub"
       values = flatten(
         [
           for repo in local.repository_names :
           [
-            "repo:${local.organization_name}@${local.owner_id}/${repo}@${local.repository_id}:${each.value}",
+            "repo:${local.organization_name}@${local.owner_id}/${repo}@${local.repository_id}:${each.value.suffix}",
           ]
         ]
       )
@@ -101,6 +107,9 @@ data "aws_iam_policy_document" "github_oidc_assume_role" {
   }
 }
 
+##################
+# カスタムポリシー
+##################
 resource "aws_iam_policy" "s3_plan_policy" {
   name        = "S3PlanPolicy"
   description = "iam policy for handling tflock file in S3"
