@@ -58,8 +58,7 @@ data "aws_iam_policy_document" "github_oidc_assume_role" {
         [
         for repo in local.repository_names :
         [
-            "repo:${local.organization_name}/${repo}:ref:refs/heads/main",
-            "repo:${local.organization_name}/${repo}:pull_request",
+            "repo:${local.organization_name}/${repo}:*",
         ]
       ]
       )
