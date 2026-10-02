@@ -14,8 +14,8 @@ permissions:
     pull-requests: write
 
 env: 
-    ROLE_ARN: vars.PLAN_ROLE_ARN
-    REGION: vars.REGION
+    ROLE_ARN: ${{ vars.PLAN_ROLE_ARN }}
+    REGION: ${{ vars.REGION }}
         
 jobs: 
     plan:
