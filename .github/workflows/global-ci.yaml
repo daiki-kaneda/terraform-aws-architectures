@@ -15,7 +15,7 @@ permissions:
 
 env: 
     ROLE_ARN: vars.PLAN_ROLE_ARN
-    REGION: var.REGION
+    REGION: vars.REGION
         
 jobs: 
     plan:
