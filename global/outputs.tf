@@ -14,6 +14,9 @@ output "region" {
   value = data.aws_region.this.region
 }
 
-output "iam_role_arn" {
-  value = aws_iam_role.github_admin.arn
+output "iam_role_arns" {
+  value = {
+    apply = aws_iam_role.github["apply"].arn
+    plan  = aws_iam_role.github["plan"].arn
+  }
 }
