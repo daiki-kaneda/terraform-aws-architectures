@@ -12,3 +12,17 @@ module "vpc" {
   enable_nat_gateway     = var.vpc_config.enable_nat_gateway
   one_nat_gateway_per_az = var.vpc_config.enable_nat_gateway
 }
+
+resource "terraform_data" "nat_config" {
+  lifecycle {
+    precondition {
+      condition     = var.vpc_config.enable_nat_gateway || var.asg_config.use_public_subnet
+      error_message = "NAT Gatewayが無効である状態で、ASGがprivateサブネットを使用しています。"
+    }
+
+    precondition {
+      condition     = !(var.vpc_config.enable_nat_gateway && var.asg_config.use_public_subnet)
+      error_message = "ASGがpublicサブネットを使用している状態で、NAT Gatewayが有効になっています。"
+    }
+  }
+}

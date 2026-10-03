@@ -21,6 +21,27 @@ variable "vpc_config" {
     condition     = can(cidrnetmask(var.vpc_config["cidr"]))
     error_message = "VPCのCIDRブロックが無効な値です。"
   }
+
+  validation {
+    condition = alltrue([
+      for cidr in var.vpc_config["public_subnets"] : can(cidrnetmask(cidr))
+    ])
+    error_message = "パブリックサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+  }
+
+  validation {
+    condition = alltrue([
+      for cidr in var.vpc_config["private_subnets"] : can(cidrnetmask(cidr))
+    ])
+    error_message = "プライベートサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+  }
+
+  validation {
+    condition = alltrue([
+      for cidr in var.vpc_config["database_subnets"] : can(cidrnetmask(cidr))
+    ])
+    error_message = "データベースのサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+  }
 }
 
 variable "asg_config" {

@@ -1,7 +1,3 @@
-data "aws_ssm_parameter" "amazon_linux" {
-  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
-}
-
 locals {
   app_subnets = var.asg_config.use_public_subnet ? module.vpc.public_subnets : module.vpc.private_subnets
   asg_subnets = var.asg_config.single_az ? [local.app_subnets[0]] : local.app_subnets
