@@ -8,7 +8,7 @@ terraform {
   }
   backend "s3" {
     bucket       = "terraform-aws-architectures-backend-e69de93d"
-    key          = "01-ec2-3tier-dev/state.tfstate"
+    key          = "01-ec2-3tier-prod/state.tfstate"
     use_lockfile = true
     region       = "ap-northeast-1"
   }
@@ -18,8 +18,8 @@ provider "aws" {
   region = "ap-northeast-1"
   default_tags {
     tags = {
-      Project     = "01-ec2-3tier-dev"
-      Environment = "Dev"
+      Project     = "01-ec2-3tier-prod"
+      Environment = "Prod"
       ManagedBy   = "Terraform"
     }
   }

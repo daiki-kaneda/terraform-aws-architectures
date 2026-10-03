@@ -107,3 +107,21 @@ variable "multi_az" {
     error_message = "開発環境ではRDSのマルチAZは使えません。"
   }
 }
+
+variable "enable_waf" {
+  type    = bool
+  default = false
+  validation {
+    condition     = var.enable_waf == false
+    error_message = "開発環境ではWAFは無効にします。"
+  }
+}
+
+variable "enable_https" {
+  type    = bool
+  default = false
+  validation {
+    condition     = var.enable_https == false
+    error_message = "開発環境ではHTTPSを無効にします。"
+  }
+}

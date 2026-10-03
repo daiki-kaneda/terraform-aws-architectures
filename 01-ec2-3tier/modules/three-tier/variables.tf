@@ -71,3 +71,19 @@ variable "rds_config" {
   RDS MySQLについての設定。インスタンスクラス、ストレージ、マルチAZのせ
   EOT
 }
+
+variable "alb_config" {
+  type = object({
+    enable_https    = bool
+    domain_name     = optional(string)
+    route53_zone_id = optional(string)
+    enable_waf      = bool
+  })
+
+  validation {
+    condition = !var.alb_config.enable_https || (
+      var.alb_config.domain_name != null && var.alb_config.route53_zone_id != null
+    )
+    error_message = "HTTPSが有効にした場合、ドメイン名とRoute53ゾーンIDは必須です。"
+  }
+}
