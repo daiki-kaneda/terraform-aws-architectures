@@ -26,4 +26,9 @@ module "three_tier" {
     allocated_storage = var.allocated_storage
     multi_az          = var.multi_az
   }
+
+  alb_config = {
+    enable_waf   = var.enable_waf
+    enable_https = var.enable_https
+  }
 }
