@@ -18,7 +18,7 @@ provider "aws" {
   region = "ap-northeast-1"
   default_tags {
     tags = {
-      Project     = "01-ec2-3tier"
+      Project     = "01-ec2-3tier-dev"
       Environment = "Dev"
       ManagedBy   = "Terraform"
     }
