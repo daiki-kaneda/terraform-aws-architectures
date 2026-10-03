@@ -1,0 +1,132 @@
+variable "enable_nat_gateway" {
+  type        = bool
+  description = "NAT Gateway使用についての設定。"
+  default     = true
+
+  validation {
+    condition     = var.enable_nat_gateway == true
+    error_message = "本番環境ではNAT Gatewayを使用してください。"
+  }
+}
+
+variable "instance_type" {
+  type        = string
+  description = "ASGのインスタンスタイプ。 x86_64使用。"
+  default     = "m7i.large"
+
+  validation {
+    condition     = contains(["m7i.large", "m7i.xlarge"], var.instance_type)
+    error_message = "本番環境のインスタンスタイプは m7i.large または m7i.xlarge にしてください。"
+  }
+}
+
+variable "min_size" {
+  type        = number
+  description = "ASGの最小キャパシティ。"
+  default     = 2
+
+  validation {
+    condition     = var.min_size == 2
+    error_message = "本番環境のASGの最小キャパシティは2にしてください。"
+  }
+}
+
+variable "max_size" {
+  type        = number
+  description = "ASGの最大キャパシティ。"
+  default     = 2
+
+  validation {
+    condition     = var.max_size >= 2 && var.max_size <= 4
+    error_message = "本番環境のASGの最大キャパシティは2以上4以下にしてください。"
+  }
+}
+
+variable "desired_capacity" {
+  type        = number
+  description = "ASGの希望するキャパシティ。"
+  default     = 2
+
+  validation {
+    condition     = var.desired_capacity == 2
+    error_message = "本番環境のASGの希望するキャパシティは2にしてください。"
+  }
+}
+
+variable "use_public_subnet" {
+  type        = bool
+  description = "ASGがpublicサブネットを使うかどうかの設定。"
+  default     = false
+
+  validation {
+    condition     = var.use_public_subnet == false
+    error_message = "本番環境ではNAT Gatewayを使うため、ASGではprivateサブネットを使用してください。"
+  }
+}
+
+variable "single_az" {
+  type        = bool
+  description = "ASGを先頭のAZだけに置くかどうかの設定。"
+  default     = false
+
+  validation {
+    condition     = var.single_az == false
+    error_message = "本番環境では、ASGをマルチAZにしてください"
+  }
+}
+
+variable "instance_class" {
+  type        = string
+  description = "RDSのインスタンスクラス。"
+  default     = "db.m7g.large"
+
+  validation {
+    condition     = contains(["db.m7g.large", "db.m7g.xlarge"], var.instance_class)
+    error_message = "本番環境のRDSインスタンスクラスは db.m7g.large または db.m7g.xlarge にしてください。"
+  }
+}
+
+variable "allocated_storage" {
+  type        = number
+  description = "RDSのストレージ容量(GiB)。"
+  default     = 20
+
+  validation {
+    condition     = var.allocated_storage >= 20 && var.allocated_storage <= 100
+    error_message = "本番環境のRDSストレージは20GB以上100GB以下にしてください。"
+  }
+}
+
+variable "multi_az" {
+  type        = bool
+  description = "RDSをマルチAZにするかどうかの設定。"
+  default     = true
+
+  validation {
+    condition     = var.multi_az == true
+    error_message = "本番環境ではRDSはマルチAZにしてください。"
+  }
+}
+
+variable "enable_waf" {
+  type    = bool
+  default = true
+  validation {
+    condition     = var.enable_waf == true
+    error_message = "本番環境ではALBのWAFを有効にしてください。"
+  }
+}
+
+variable "enable_https" {
+  type    = bool
+  default = false
+}
+
+variable "domain_name" {
+  type    = string
+  default = null
+}
+variable "route53_zone_id" {
+  type    = string
+  default = null
+}
