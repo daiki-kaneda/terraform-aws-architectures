@@ -1,6 +1,6 @@
 variable "project_name" {
   type        = string
-  description = "Prefix used for resource names in this stack."
+  description = "リソース名の接頭語として使われるプロジェクト名"
 }
 
 variable "vpc_config" {
@@ -12,7 +12,15 @@ variable "vpc_config" {
     database_subnets   = list(string)
     enable_nat_gateway = bool
   })
-  description = "VPC layout. Public, private, and database subnet lists must each match the length of azs. The ALB uses every public subnet, so at least two AZs are required."
+  description = <<-EOT
+  VPCの設定. パブリック、プライベート、データベースのサブネットの数はAZのサブネットの個数と一致していなければいけません。
+  少なくとも二つのAZが必要です。
+  EOT
+
+  validation {
+    condition     = can(cidrnetmask(var.vpc_config["cidr"]))
+    error_message = "VPCのCIDRブロックが無効な値です。"
+  }
 }
 
 variable "asg_config" {
@@ -24,7 +32,12 @@ variable "asg_config" {
     use_public_subnet = bool
     single_az         = bool
   })
-  description = "Application capacity and placement. use_public_subnet selects public subnets. single_az keeps instances in the first of those subnets. instance_type must be x86_64 because the AMI is Amazon Linux 2023 x86_64."
+  description = <<-EOT
+  インスタンスのキャパシティと配置の設定。
+  use_public_subnetはパブリックサブネットを使用します。
+  single_azはサブネットのリストの最初のサブネットのみを使用します。
+  インスタンスタイプはAMIがAmazon Linux 2023 x86_64のため、x86_64でなければいけません。
+  EOT
 }
 
 variable "rds_config" {
@@ -33,5 +46,7 @@ variable "rds_config" {
     allocated_storage = number
     multi_az          = bool
   })
-  description = "RDS MySQL capacity. Engine, credentials, and deletion behavior stay inside the module."
+  description = <<-EOT
+  RDS MySQLについての設定。インスタンスクラス、ストレージ、マルチAZのせ
+  EOT
 }
