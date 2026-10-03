@@ -10,7 +10,7 @@ output "rds_endpoint" {
 
 output "rds_username" {
   description = "RDSインスタンスのユーザーネーム。"
-  sensitive = true
+  sensitive   = true
   value       = module.three_tier.rds_username
 }
 
