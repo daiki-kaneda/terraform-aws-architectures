@@ -1,0 +1,42 @@
+name: 01-ec2-3tier-dev CD
+
+on: 
+    push:
+        branches: 
+            - main
+        paths:
+            - '01-ec2-3tier/dev/**'
+            - '01-ec2-3tier/modules/**'
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+    pull-requests: write
+
+env: 
+    ROLE_ARN: ${{ vars.APPLY_ROLE_ARN }}
+    REGION: "${{ vars.REGION }}"
+    
+jobs: 
+    plan:
+        defaults:
+            run:
+                working-directory: 01-ec2-3tier/dev/
+        name: Apply
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with: 
+                role-to-assume: "${{env.ROLE_ARN}}"
+                aws-region: "${{env.REGION}}"
+            - name: Setup Terraform
+              uses: hashicorp/setup-terraform@v4
+            - name: Init Terraform
+              run: terraform init
+            - name: Terraform Apply
+              if: github.event_name == 'workflow_dispatch'
+              run: terraform apply -auto-approve
