@@ -7,10 +7,10 @@ terraform {
     }
   }
   backend "s3" {
-    bucket = "terraform-aws-architectures-backend-e69de93d"
-    key = "01-ec2-3tier-dev/state.tfstate"
+    bucket       = "terraform-aws-architectures-backend-e69de93d"
+    key          = "01-ec2-3tier-dev/state.tfstate"
     use_lockfile = true
-    region = "ap-northeast-1"
+    region       = "ap-northeast-1"
   }
 }
 
