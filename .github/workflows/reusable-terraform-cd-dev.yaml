@@ -1,3 +1,5 @@
+# Apply用のロールを使用.
+# workflow_dispatchの時にのみ、applyを行う。
 name: Reusable Terraform CD | Dev
 
 on: 

@@ -1,3 +1,4 @@
+# Plan用ロールで terraform planまでを行う。applyはしない。
 name: Reusable Terraform CD | Prod
 
 on: 

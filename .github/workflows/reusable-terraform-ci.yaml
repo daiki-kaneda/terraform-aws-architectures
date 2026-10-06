@@ -1,3 +1,5 @@
+# Plan用ロールでfmt,validate,planを行う。
+# pull_request のときだけ PR に結果をコメントする。apply はしない。
 name: Reusable Terraform CI
 
 on: 
