@@ -1,0 +1,22 @@
+name: 02-fargate-3tier-prod CD
+
+on: 
+    push:
+        branches: 
+            - main
+        paths:
+            - '02-fargate-3tier/prod/**'
+            - '02-fargate-3tier/modules/**'
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+    pull-requests: write
+
+jobs: 
+    plan:
+        uses: ./.github/workflows/reusable-terraform-cd-prod.yaml
+        with:
+            working-directory: 02-fargate-3tier/prod/
+        
