@@ -16,4 +16,8 @@ TerraformでAWSの基本アーキテクチャの実装をする学習用リポ�
 
 ### 04-spa-frontend
 
+
+### CICD
+- ./terraformのキャッシュを行うアクションを作成・使用
+- CIのTerraform init,fmt check,validate,plan,planをprにcommentをアクション化する(DRY)
  
