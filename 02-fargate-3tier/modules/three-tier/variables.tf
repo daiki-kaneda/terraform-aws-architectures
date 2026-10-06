@@ -19,28 +19,28 @@ variable "vpc_config" {
 
   validation {
     condition     = can(cidrnetmask(var.vpc_config["cidr"]))
-    error_message = "VPCのCIDRブロックが無効な値です。"
+    error_message = "VPCのCIDRがIPv4のCIDRではありません。10.0.0.0/16 のように指定してください。"
   }
 
   validation {
     condition = alltrue([
       for cidr in var.vpc_config["public_subnets"] : can(cidrnetmask(cidr))
     ])
-    error_message = "パブリックサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+    error_message = "パブリックサブネットに、IPv4のCIDRではない値があります。10.0.101.0/24 のように指定してください。"
   }
 
   validation {
     condition = alltrue([
       for cidr in var.vpc_config["private_subnets"] : can(cidrnetmask(cidr))
     ])
-    error_message = "プライベートサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+    error_message = "プライベートサブネットに、IPv4のCIDRではない値があります。10.0.1.0/24 のように指定してください。"
   }
 
   validation {
     condition = alltrue([
       for cidr in var.vpc_config["database_subnets"] : can(cidrnetmask(cidr))
     ])
-    error_message = "データベースのサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+    error_message = "データベースサブネットに、IPv4のCIDRではない値があります。10.0.201.0/24 のように指定してください。"
   }
 }
 
@@ -88,20 +88,30 @@ variable "fargate_config" {
       ) || (
       var.fargate_config.cpu == 16384 && contains(range(32768, 122881, 8192), var.fargate_config.memory)
     )
-    error_message = "cpuとmemoryはFargateが許可する組み合わせにしてください。"
+    error_message = <<-EOT
+    cpu と memory はタスク全体のサイズです。Fargateが許可する次の組み合わせにしてください。
+
+    - cpu 256: memory 512, 1024, 2048
+    - cpu 512: memory 1024, 2048, 3072, 4096
+    - cpu 1024: memory 2048 から 8192 まで 1024 刻み
+    - cpu 2048: memory 4096 から 16384 まで 1024 刻み
+    - cpu 4096: memory 8192 から 30720 まで 1024 刻み
+    - cpu 8192: memory 16384 から 61440 まで 4096 刻み
+    - cpu 16384: memory 32768 から 122880 まで 8192 刻み
+    EOT
   }
 
   validation {
     condition     = length(var.fargate_config.image) > 0
-    error_message = "コンテナイメージのURIを指定してください。"
+    error_message = "コンテナイメージが空です。タグまで含めたURIを指定してください。例: public.ecr.aws/docker/library/httpd:2.4"
   }
 
   validation {
     condition = (
-      var.fargate_config.min_capacity >= 1 &&
+      var.fargate_config.min_capacity >= 0 &&
       var.fargate_config.max_capacity >= var.fargate_config.min_capacity
     )
-    error_message = "最小台数は1以上、最大台数は最小台数以上にしてください。"
+    error_message = "最小タスク数は 0 以上にしてください。最大タスク数は、最小タスク数と同じか、それより大きくしてください。"
   }
 
   validation {
@@ -116,12 +126,12 @@ variable "fargate_config" {
         try(var.fargate_config.capacity_provider_strategy.fargate_spot.weight, 0) > 0
       )
     )
-    error_message = "キャパシティプロバイダのweightは0以上で、少なくとも一方は1以上にしてください。"
+    error_message = "weightはタスクを分ける比率で、0以上にしてください。通常のFargateとFargate Spotの少なくとも一方は1以上にしてください。両方0だとタスクを置く場所がありません。"
   }
 
   validation {
     condition     = try(var.fargate_config.capacity_provider_strategy.fargate.base, 0) >= 0
-    error_message = "FARGATEのbaseは0以上にしてください。"
+    error_message = "baseは通常のFargateに先に置くタスク数です。0以上にしてください。"
   }
 
   validation {
@@ -129,7 +139,7 @@ variable "fargate_config" {
       [1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653],
       var.fargate_config.log_retention_in_days
     )
-    error_message = "ログの保持日数はCloudWatch Logsが受け付ける値にしてください。"
+    error_message = "ログの保持日数は CloudWatch Logs が受け付ける次の日数にしてください: 1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180, 365, 400, 545, 731, 1827, 3653。"
   }
 }
 
@@ -156,6 +166,6 @@ variable "alb_config" {
     condition = !var.alb_config.enable_https || (
       var.alb_config.domain_name != null && var.alb_config.route53_zone_id != null
     )
-    error_message = "HTTPSが有効にした場合、ドメイン名とRoute53ゾーンIDは必須です。"
+    error_message = "HTTPSを有効にしたときは、証明書を出すドメイン名と、そのレコードを作るRoute 53ゾーンIDの両方が必要です。"
   }
 }

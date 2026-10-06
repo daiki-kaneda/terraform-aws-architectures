@@ -19,28 +19,28 @@ variable "vpc_config" {
 
   validation {
     condition     = can(cidrnetmask(var.vpc_config["cidr"]))
-    error_message = "VPCのCIDRブロックが無効な値です。"
+    error_message = "VPCのCIDRがIPv4のCIDRではありません。10.0.0.0/16 のように指定してください。"
   }
 
   validation {
     condition = alltrue([
       for cidr in var.vpc_config["public_subnets"] : can(cidrnetmask(cidr))
     ])
-    error_message = "パブリックサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+    error_message = "パブリックサブネットに、IPv4のCIDRではない値があります。10.0.101.0/24 のように指定してください。"
   }
 
   validation {
     condition = alltrue([
       for cidr in var.vpc_config["private_subnets"] : can(cidrnetmask(cidr))
     ])
-    error_message = "プライベートサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+    error_message = "プライベートサブネットに、IPv4のCIDRではない値があります。10.0.1.0/24 のように指定してください。"
   }
 
   validation {
     condition = alltrue([
       for cidr in var.vpc_config["database_subnets"] : can(cidrnetmask(cidr))
     ])
-    error_message = "データベースのサブネットの少なくともひとつのCIDRブロックが無効な値です。"
+    error_message = "データベースサブネットに、IPv4のCIDRではない値があります。10.0.201.0/24 のように指定してください。"
   }
 }
 
@@ -84,6 +84,6 @@ variable "alb_config" {
     condition = !var.alb_config.enable_https || (
       var.alb_config.domain_name != null && var.alb_config.route53_zone_id != null
     )
-    error_message = "HTTPSが有効にした場合、ドメイン名とRoute53ゾーンIDは必須です。"
+    error_message = "HTTPSを有効にしたときは、証明書を出すドメイン名と、そのレコードを作るRoute 53ゾーンIDの両方が必要です。"
   }
 }

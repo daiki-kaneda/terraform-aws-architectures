@@ -13,10 +13,9 @@ data "aws_availability_zones" "available" {
         )]
       )
       error_message = <<-EOT
-      少なくとも一つのVPCのAZが有効ではありません。
-      以下が"${data.aws_region.current.region}"で有効なAZです。
-      
-      [${join(", ", self.names)}]
+      vpc_config.azs に、${data.aws_region.current.region} で有効でないAZがあります。次の名前から選んでください。
+
+      ${join(", ", self.names)}
       EOT
     }
   }

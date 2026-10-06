@@ -5,7 +5,7 @@ variable "enable_nat_gateway" {
 
   validation {
     condition     = var.enable_nat_gateway == true
-    error_message = "本番環境ではNAT Gatewayを使用してください。"
+    error_message = "本番環境のインスタンスはプライベートサブネットに置くため、外への出口としてNAT Gatewayが必要です。true にしてください。"
   }
 }
 
@@ -16,7 +16,7 @@ variable "instance_type" {
 
   validation {
     condition     = contains(["m7i.large", "m7i.xlarge"], var.instance_type)
-    error_message = "本番環境のインスタンスタイプは m7i.large または m7i.xlarge にしてください。"
+    error_message = "本番環境では負荷に耐えるサイズだけ使えます。m7i.large または m7i.xlarge にしてください。"
   }
 }
 
@@ -27,7 +27,7 @@ variable "min_size" {
 
   validation {
     condition     = var.min_size == 2
-    error_message = "本番環境のASGの最小キャパシティは2にしてください。"
+    error_message = "1台が止まってもサービスを続けるため、最小台数は 2 にしてください。"
   }
 }
 
@@ -38,7 +38,7 @@ variable "max_size" {
 
   validation {
     condition     = var.max_size >= 2 && var.max_size <= 4
-    error_message = "本番環境のASGの最大キャパシティは2以上4以下にしてください。"
+    error_message = "本番環境で増やせる台数は 2 から 4 までです。最大台数をその範囲にしてください。"
   }
 }
 
@@ -49,7 +49,7 @@ variable "desired_capacity" {
 
   validation {
     condition     = var.desired_capacity == 2
-    error_message = "本番環境のASGの希望するキャパシティは2にしてください。"
+    error_message = "平常時は2台で動かします。希望する台数は 2 にしてください。"
   }
 }
 
@@ -60,7 +60,7 @@ variable "use_public_subnet" {
 
   validation {
     condition     = var.use_public_subnet == false
-    error_message = "本番環境ではNAT Gatewayを使うため、ASGではprivateサブネットを使用してください。"
+    error_message = "本番環境のインスタンスはインターネットから直接届かないプライベートサブネットに置いてください。false にしてください。"
   }
 }
 
@@ -71,7 +71,7 @@ variable "single_az" {
 
   validation {
     condition     = var.single_az == false
-    error_message = "本番環境では、ASGをマルチAZにしてください"
+    error_message = "1つのAZが止まってもサービスを続けるため、複数のAZに置いてください。single_az は false にしてください。"
   }
 }
 
@@ -82,7 +82,7 @@ variable "instance_class" {
 
   validation {
     condition     = contains(["db.m7g.large", "db.m7g.xlarge"], var.instance_class)
-    error_message = "本番環境のRDSインスタンスクラスは db.m7g.large または db.m7g.xlarge にしてください。"
+    error_message = "本番環境では負荷に耐えるDBだけ使えます。db.m7g.large または db.m7g.xlarge にしてください。"
   }
 }
 
@@ -93,7 +93,7 @@ variable "allocated_storage" {
 
   validation {
     condition     = var.allocated_storage >= 20 && var.allocated_storage <= 100
-    error_message = "本番環境のRDSストレージは20GB以上100GB以下にしてください。"
+    error_message = "本番環境のストレージは 20 GiB 以上 100 GiB 以下にしてください。20 GiB は MySQL の最小サイズです。"
   }
 }
 
@@ -104,7 +104,7 @@ variable "multi_az" {
 
   validation {
     condition     = var.multi_az == true
-    error_message = "本番環境ではRDSはマルチAZにしてください。"
+    error_message = "DBの片方が止まっても継続できるよう、マルチAZにしてください。true にしてください。"
   }
 }
 
@@ -113,7 +113,7 @@ variable "enable_waf" {
   default = true
   validation {
     condition     = var.enable_waf == true
-    error_message = "本番環境ではALBのWAFを有効にしてください。"
+    error_message = "本番環境ではインターネットからの不正なリクエストをWAFで止めます。true にしてください。"
   }
 }
 

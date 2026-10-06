@@ -5,7 +5,7 @@ variable "enable_nat_gateway" {
 
   validation {
     condition     = var.enable_nat_gateway == false
-    error_message = "開発環境ではNAT Gatewayを使用できません。"
+    error_message = "開発環境ではNAT Gatewayの料金を避けるため、使えません。false にしてください。"
   }
 }
 
@@ -16,7 +16,7 @@ variable "instance_type" {
 
   validation {
     condition     = contains(["t3.micro", "t3a.micro"], var.instance_type)
-    error_message = "開発環境のインスタンスタイプは t3.micro または t3a.micro にしてください。"
+    error_message = "開発環境では小さいインスタンスだけ使えます。t3.micro または t3a.micro にしてください。"
   }
 }
 
@@ -27,7 +27,7 @@ variable "min_size" {
 
   validation {
     condition     = var.min_size == 1
-    error_message = "開発環境のASGの最小キャパシティは1にしてください。"
+    error_message = "開発環境ではインスタンスを1台に固定しています。最小台数は 1 にしてください。"
   }
 }
 
@@ -38,7 +38,7 @@ variable "max_size" {
 
   validation {
     condition     = var.max_size == 1
-    error_message = "開発環境のASGの最大キャパシティは1にしてください。"
+    error_message = "開発環境ではインスタンスを1台に固定しています。最大台数は 1 にしてください。"
   }
 }
 
@@ -49,7 +49,7 @@ variable "desired_capacity" {
 
   validation {
     condition     = var.desired_capacity == 1
-    error_message = "開発環境のASGの希望するキャパシティは1にしてください。"
+    error_message = "開発環境ではインスタンスを1台に固定しています。希望する台数は 1 にしてください。"
   }
 }
 
@@ -60,7 +60,7 @@ variable "use_public_subnet" {
 
   validation {
     condition     = var.use_public_subnet
-    error_message = "開発環境ではNAT Gatewayを使わないため、ASGではpublicサブネットを使用してください。"
+    error_message = "NAT Gatewayがないため、プライベートサブネットからはインターネットへ出られません。インスタンスはパブリックサブネットに置いてください。"
   }
 }
 
@@ -71,7 +71,7 @@ variable "single_az" {
 
   validation {
     condition     = var.single_az
-    error_message = "開発環境では、ASGのAZは1つだけにしてください。"
+    error_message = "開発環境ではAZを1つに抑え、構成と料金を小さくしています。true にしてください。"
   }
 }
 
@@ -82,7 +82,7 @@ variable "instance_class" {
 
   validation {
     condition     = contains(["db.t4g.micro", "db.t3.micro"], var.instance_class)
-    error_message = "開発環境のRDSインスタンスクラスは db.t4g.micro または db.t3.micro にしてください。"
+    error_message = "開発環境では小さいDBだけ使えます。db.t4g.micro または db.t3.micro にしてください。"
   }
 }
 
@@ -93,7 +93,7 @@ variable "allocated_storage" {
 
   validation {
     condition     = var.allocated_storage == 20
-    error_message = "開発環境のRDSストレージはMySQLのストレージの下限である20GiBにしてください。"
+    error_message = "開発環境のストレージはMySQLの最小サイズに固定しています。20 にしてください。"
   }
 }
 
@@ -104,7 +104,7 @@ variable "multi_az" {
 
   validation {
     condition     = var.multi_az == false
-    error_message = "開発環境ではRDSのマルチAZは使えません。"
+    error_message = "スタンバイ用DBの料金がかかるため、開発環境ではマルチAZにできません。false にしてください。"
   }
 }
 
@@ -113,7 +113,7 @@ variable "enable_waf" {
   default = false
   validation {
     condition     = var.enable_waf == false
-    error_message = "開発環境ではWAFは無効にします。"
+    error_message = "開発環境ではWAFの料金を避けるため、無効にしてください。"
   }
 }
 
@@ -122,6 +122,6 @@ variable "enable_https" {
   default = false
   validation {
     condition     = var.enable_https == false
-    error_message = "開発環境ではHTTPSを無効にします。"
+    error_message = "開発環境では証明書と独自ドメインを使わないため、HTTPSは無効にしてください。"
   }
 }
