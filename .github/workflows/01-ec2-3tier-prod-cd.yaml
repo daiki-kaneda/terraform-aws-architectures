@@ -14,29 +14,9 @@ permissions:
     contents: read
     pull-requests: write
 
-env: 
-    ROLE_ARN: ${{ vars.PLAN_ROLE_ARN }}
-    REGION: "${{ vars.REGION }}"
-    
 jobs: 
     plan:
-        defaults:
-            run:
-                working-directory: 01-ec2-3tier/prod/
-        name: Apply
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout
-              uses: actions/checkout@v7
-            - name: Configure AWS Credentials
-              uses: aws-actions/configure-aws-credentials@v6
-              with: 
-                role-to-assume: "${{env.ROLE_ARN}}"
-                aws-region: "${{env.REGION}}"
-            - name: Setup Terraform
-              uses: hashicorp/setup-terraform@v4
-            - name: Init Terraform
-              run: terraform init
-              # 本番環境はPlanまでにする
-            - name: Terraform Plan
-              run: terraform plan
+        uses: ./.github/workflows/reusable-terraform-cd-prod.yaml
+        with:
+            working-directory: 01-ec2-3tier/prod/
+        
