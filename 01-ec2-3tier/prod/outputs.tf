@@ -18,3 +18,13 @@ output "rds_master_user_secret_arn" {
   description = "RDSのパスワードが保存されているSecretManagerのArn。"
   value       = module.three_tier.rds_master_user_secret_arn
 }
+
+output "app_ami_parameter_name" {
+  description = "アプリAMI IDを入れるSSMパラメータ名。"
+  value       = module.three_tier.app_ami_parameter_name
+}
+
+output "autoscaling_group_name" {
+  description = "アプリを載せるAuto Scalingグループ名。"
+  value       = module.three_tier.autoscaling_group_name
+}

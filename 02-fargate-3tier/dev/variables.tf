@@ -39,12 +39,6 @@ variable "task_size" {
 }
 
 
-variable "image" {
-  type        = string
-  description = "コンテナのイメージURI。タグまで含める。"
-  default     = "public.ecr.aws/docker/library/httpd:2.4"
-}
-
 variable "assign_public_ip" {
   type        = bool
   description = "タスクのENIにパブリックIPを割り当てるかどうかの設定。"

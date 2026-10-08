@@ -17,3 +17,13 @@ output "rds_master_user_secret_arn" {
   description = "RDSのパスワードが保存されているSecretManagerのArn"
   value       = module.db.db_instance_master_user_secret_arn
 }
+
+output "ecs_cluster_name" {
+  description = "アプリを載せるECSクラスタ名。"
+  value       = "${var.project_name}-cluster"
+}
+
+output "ecs_service_name" {
+  description = "アプリを載せるECSサービス名。"
+  value       = "${var.project_name}-service"
+}

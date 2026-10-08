@@ -1,0 +1,48 @@
+name: Find AMI
+description: ProjectタグとGitShaが一致するAMI IDを返す
+
+inputs:
+    git-sha:
+        description: 探すAMIのGitSha。空なら、このワークフローを起動したコミット
+        required: false
+        default: ""
+    project:
+        description: AMIのProjectタグ
+        required: false
+        default: ec2-3tier
+
+outputs:
+    ami-id:
+        description: 見つかったAMI ID
+        value: ${{ steps.find.outputs.ami-id }}
+
+runs:
+    using: composite
+    steps:
+        - name: Find AMI
+          id: find
+          shell: bash
+          env:
+            GIT_SHA: ${{ inputs.git-sha }}
+            PROJECT: ${{ inputs.project }}
+          run: |
+            set -eu
+
+            sha="$GIT_SHA"
+            if [ -z "$sha" ]; then
+              sha="$GITHUB_SHA"
+            fi
+
+            # https://docs.aws.amazon.com/cli/latest/reference/ec2/describe-images.html
+            ami_id="$(aws ec2 describe-images \
+              --owners self \
+              --filters "Name=tag:Project,Values=${PROJECT}" "Name=tag:GitSha,Values=${sha}" \
+              --query 'sort_by(Images, &CreationDate)[-1].ImageId' \
+              --output text)"
+
+            if [ -z "$ami_id" ] || [ "$ami_id" = "None" ]; then
+              echo "GitSha ${sha} のAMIがありません。先に dev のアプリCDで Packer を実行してください。"
+              exit 1
+            fi
+
+            echo "ami-id=${ami_id}" >> "$GITHUB_OUTPUT"

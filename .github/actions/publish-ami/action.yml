@@ -1,0 +1,63 @@
+name: Publish AMI and refresh
+description: SSMパラメータをAMI IDで更新し、Auto Scalingグループをinstance refreshする
+
+inputs:
+    parameter-name:
+        description: AMI IDを入れるSSMパラメータ名
+        required: true
+    ami-id:
+        description: 反映するAMI ID
+        required: true
+    asg-name:
+        description: Auto Scalingグループ名
+        required: true
+    min-healthy-percentage:
+        description: refresh中に残す正常インスタンスの割合
+        required: true
+
+runs:
+    using: composite
+    steps:
+        - name: Publish AMI and refresh
+          shell: bash
+          env:
+            PARAMETER_NAME: ${{ inputs.parameter-name }}
+            AMI_ID: ${{ inputs.ami-id }}
+            ASG_NAME: ${{ inputs.asg-name }}
+            MIN_HEALTHY_PERCENTAGE: ${{ inputs.min-healthy-percentage }}
+          run: |
+            set -eu
+            # https://docs.aws.amazon.com/cli/latest/reference/ssm/get-parameter.html
+            aws ssm get-parameter --name "$PARAMETER_NAME"
+            # https://docs.aws.amazon.com/cli/latest/reference/ssm/put-parameter.html
+            aws ssm put-parameter --name "$PARAMETER_NAME" --type String --value "$AMI_ID" --overwrite
+
+            # https://docs.aws.amazon.com/cli/latest/reference/autoscaling/start-instance-refresh.html
+            refresh_id="$(aws autoscaling start-instance-refresh \
+              --auto-scaling-group-name "$ASG_NAME" \
+              --preferences "MinHealthyPercentage=${MIN_HEALTHY_PERCENTAGE},InstanceWarmup=180,SkipMatching=false" \
+              --query InstanceRefreshId \
+              --output text)"
+
+            while true; do
+              # https://docs.aws.amazon.com/cli/latest/reference/autoscaling/describe-instance-refreshes.html
+              status="$(aws autoscaling describe-instance-refreshes \
+                --auto-scaling-group-name "$ASG_NAME" \
+                --instance-refresh-ids "$refresh_id" \
+                --query 'InstanceRefreshes[0].Status' \
+                --output text)"
+              echo "$status"
+              if [ "$status" = "Successful" ]; then
+                break
+              fi
+              if [ "$status" = "Pending" ] || [ "$status" = "InProgress" ]; then
+                sleep 30
+              else
+                exit 1
+              fi
+            done
+
+            echo "### AMI" >> "$GITHUB_STEP_SUMMARY"
+            echo "$AMI_ID" >> "$GITHUB_STEP_SUMMARY"
+            echo "### Auto Scaling group" >> "$GITHUB_STEP_SUMMARY"
+            echo "$ASG_NAME" >> "$GITHUB_STEP_SUMMARY"

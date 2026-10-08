@@ -48,7 +48,6 @@ variable "fargate_config" {
   type = object({
     cpu               = number
     memory            = number
-    image             = string
     assign_public_ip  = bool
     use_public_subnet = bool
     single_az         = bool
@@ -99,11 +98,6 @@ variable "fargate_config" {
     - cpu 8192: memory 16384 から 61440 まで 4096 刻み
     - cpu 16384: memory 32768 から 122880 まで 8192 刻み
     EOT
-  }
-
-  validation {
-    condition     = length(var.fargate_config.image) > 0
-    error_message = "コンテナイメージが空です。タグまで含めたURIを指定してください。例: public.ecr.aws/docker/library/httpd:2.4"
   }
 
   validation {
