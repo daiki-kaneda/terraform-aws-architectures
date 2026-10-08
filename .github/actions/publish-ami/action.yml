@@ -30,7 +30,7 @@ runs:
             # https://docs.aws.amazon.com/cli/latest/reference/ssm/get-parameter.html
             aws ssm get-parameter --name "$PARAMETER_NAME"
             # https://docs.aws.amazon.com/cli/latest/reference/ssm/put-parameter.html
-            aws ssm put-parameter --name "$PARAMETER_NAME" --type String --value "$AMI_ID" --overwrite
+            aws ssm put-parameter --name "$PARAMETER_NAME" --type String --data-type aws:ec2:image --value "$AMI_ID" --overwrite
 
             # https://docs.aws.amazon.com/cli/latest/reference/autoscaling/start-instance-refresh.html
             refresh_id="$(aws autoscaling start-instance-refresh \
