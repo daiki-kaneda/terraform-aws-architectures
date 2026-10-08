@@ -7,7 +7,7 @@ SERVICE_NAME = "fargate-3tier"
 
 @app.get("/")
 def read_root() -> dict[str, str]:
-    return {"message": "Hello, world", "service": SERVICE_NAME}
+    return {"message": "Hello, world again!!", "service": SERVICE_NAME}
 
 
 @app.get("/health")
