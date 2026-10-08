@@ -1,0 +1,29 @@
+name: 02-fargate-3tier-app CI
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - '02-fargate-3tier/app/**'
+            - '.github/workflows/02-fargate-3tier-app-ci.yaml'
+            - '.github/workflows/reusable-python-app-ci.yaml'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-python-app-ci.yaml
+        with:
+            working-directory: 02-fargate-3tier/app
+    image:
+        name: Build image
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Build image
+              working-directory: 02-fargate-3tier/app
+              run: docker build -t fargate-3tier-app:ci .

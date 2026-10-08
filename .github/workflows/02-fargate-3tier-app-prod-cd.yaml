@@ -1,0 +1,21 @@
+# 本番への反映は手動。イメージは起動したコミットから作り、prod のサービスへ載せる。
+name: 02-fargate-3tier-app-prod CD
+
+on:
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-python-app-ci.yaml
+        with:
+            working-directory: 02-fargate-3tier/app
+    deploy:
+        needs: test
+        uses: ./.github/workflows/reusable-fargate-app-cd.yaml
+        with:
+            cluster: fargate-3tier-prod-cluster
+            service: fargate-3tier-prod-service

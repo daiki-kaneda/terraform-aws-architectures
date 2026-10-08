@@ -1,0 +1,46 @@
+# 本番への反映は手動。devのCDが焼いた、同じGitShaのAMIをprodへ載せる。
+name: 01-ec2-3tier-app-prod CD
+
+on:
+    workflow_dispatch:
+        inputs:
+            git_sha:
+                description: 反映するAMIのGitSha。空なら、このワークフローを起動したコミット。
+                required: false
+                type: string
+
+permissions:
+    id-token: write
+    contents: read
+
+env:
+    ROLE_ARN: ${{ vars.APPLY_ROLE_ARN }}
+    REGION: ${{ vars.REGION }}
+    PARAMETER_NAME: /ec2-3tier-prod/app-ami
+    ASG_NAME: ec2-3tier-prod
+    MIN_HEALTHY_PERCENTAGE: 50
+
+jobs:
+    deploy:
+        name: Refresh prod
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with:
+                role-to-assume: ${{ env.ROLE_ARN }}
+                aws-region: ${{ env.REGION }}
+            - name: Find AMI
+              id: ami
+              uses: ./.github/actions/find-ami
+              with:
+                git-sha: ${{ inputs.git_sha }}
+            - name: Publish AMI and refresh
+              uses: ./.github/actions/publish-ami
+              with:
+                parameter-name: ${{ env.PARAMETER_NAME }}
+                ami-id: ${{ steps.ami.outputs.ami-id }}
+                asg-name: ${{ env.ASG_NAME }}
+                min-healthy-percentage: ${{ env.MIN_HEALTHY_PERCENTAGE }}
