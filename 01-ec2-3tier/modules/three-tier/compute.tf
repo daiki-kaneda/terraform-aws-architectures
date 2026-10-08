@@ -9,6 +9,7 @@ resource "aws_ssm_parameter" "app_ami" {
   name        = "/${var.project_name}/app-ami"
   description = "ASGが起動するアプリAMIのID。初期値はAmazon Linux 2023。"
   type        = "String"
+  data_type   = "aws:ec2:image"
   value       = data.aws_ssm_parameter.amazon_linux.value
 
   lifecycle {
