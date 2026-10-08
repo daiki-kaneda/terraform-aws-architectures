@@ -1,0 +1,73 @@
+# PackerでAMIを焼き、devのSSMパラメータを更新してから instance refresh する。
+name: 01-ec2-3tier-app CD
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - '01-ec2-3tier/app/**'
+            - '01-ec2-3tier/packer/**'
+            - '.github/workflows/01-ec2-3tier-app-cd.yaml'
+            - '.github/workflows/reusable-python-app-ci.yaml'
+            - '.github/actions/publish-ami/**'
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+
+env:
+    ROLE_ARN: ${{ vars.APPLY_ROLE_ARN }}
+    REGION: ${{ vars.REGION }}
+    PARAMETER_NAME: /ec2-3tier-dev/app-ami
+    ASG_NAME: ec2-3tier-dev
+    MIN_HEALTHY_PERCENTAGE: 0
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-python-app-ci.yaml
+        with:
+            working-directory: 01-ec2-3tier/app
+    deploy:
+        name: Build AMI and refresh
+        needs: test
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: 01-ec2-3tier/packer
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with:
+                role-to-assume: ${{ env.ROLE_ARN }}
+                aws-region: ${{ env.REGION }}
+            - name: Setup Packer
+              uses: hashicorp/setup-packer@v3
+            - name: Packer init
+              run: packer init .
+            - name: Build AMI
+              # https://developer.hashicorp.com/packer/docs/templates/hcl_templates/variables#environment-variables
+              env:
+                PKR_VAR_region: ${{ env.REGION }}
+                PKR_VAR_git_sha: ${{ github.sha }}
+                PKR_VAR_run_id: ${{ github.run_id }}
+                PKR_VAR_subnet_id: ${{ vars.PACKER_SUBNET_ID }}
+              run: packer build .
+            - name: Read AMI ID
+              id: ami
+              run: |
+                # https://developer.hashicorp.com/packer/docs/post-processors/manifest
+                # https://jqlang.org/manual/
+                artifact_id="$(jq -r '.builds[-1].artifact_id' manifest.json)"
+                ami_id="$(echo "$artifact_id" | cut -d ':' -f 2)"
+                echo "id=${ami_id}" >> "$GITHUB_OUTPUT"
+            - name: Publish AMI and refresh
+              uses: ./.github/actions/publish-ami
+              with:
+                parameter-name: ${{ env.PARAMETER_NAME }}
+                ami-id: ${{ steps.ami.outputs.id }}
+                asg-name: ${{ env.ASG_NAME }}
+                min-healthy-percentage: ${{ env.MIN_HEALTHY_PERCENTAGE }}

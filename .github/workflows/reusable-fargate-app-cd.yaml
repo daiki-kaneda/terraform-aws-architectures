@@ -1,0 +1,82 @@
+# テストのあと、イメージを ECR へ push し、動いているタスク定義のイメージだけを差し替える。
+# cpu と memory は Terraform のタスク定義に残す。
+name: Reusable Fargate App CD
+
+on:
+    workflow_call:
+        inputs:
+            cluster:
+                type: string
+                required: true
+            service:
+                type: string
+                required: true
+
+permissions:
+    id-token: write
+    contents: read
+
+env:
+    ROLE_ARN: ${{ vars.APPLY_ROLE_ARN }}
+    REGION: ${{ vars.REGION }}
+    ECR_REPOSITORY: terraform-aws-architectures
+    CONTAINER_NAME: app
+
+jobs:
+    deploy:
+        name: Push and deploy
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with:
+                role-to-assume: ${{ env.ROLE_ARN }}
+                aws-region: ${{ env.REGION }}
+            - name: Login to ECR
+              id: ecr
+              uses: ./.github/actions/ecr-login
+              with:
+                repository-name: ${{ env.ECR_REPOSITORY }}
+            - name: Build and push
+              id: image
+              uses: ./.github/actions/docker-build-push
+              with:
+                context: 02-fargate-3tier/app
+                repository-name: ${{ env.ECR_REPOSITORY }}
+                repository-uri: ${{ steps.ecr.outputs.repository-uri }}
+                image-tag: fargate-${{ github.sha }}
+            - name: Download task definition
+              id: task
+              uses: ./.github/actions/ecs-task-definition
+              with:
+                cluster: ${{ inputs.cluster }}
+                service: ${{ inputs.service }}
+            - name: Render task definition
+              id: render
+              uses: aws-actions/amazon-ecs-render-task-definition@v1
+              with:
+                task-definition: ${{ steps.task.outputs.path }}
+                container-name: ${{ env.CONTAINER_NAME }}
+                image: ${{ steps.image.outputs.image }}
+            - name: Deploy task definition
+              uses: aws-actions/amazon-ecs-deploy-task-definition@v2
+              with:
+                task-definition: ${{ steps.render.outputs.task-definition }}
+                service: ${{ inputs.service }}
+                cluster: ${{ inputs.cluster }}
+                wait-for-service-stability: true
+            - name: Write summary
+              env:
+                IMAGE: ${{ steps.image.outputs.image }}
+              run: |
+                {
+                  echo "### Image"
+                  echo ""
+                  echo "$IMAGE"
+                  echo ""
+                  echo "### Service"
+                  echo ""
+                  echo "${{ inputs.cluster }} / ${{ inputs.service }}"
+                } >> "$GITHUB_STEP_SUMMARY"

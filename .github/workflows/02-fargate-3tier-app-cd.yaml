@@ -1,0 +1,31 @@
+name: 02-fargate-3tier-app CD
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - '02-fargate-3tier/app/**'
+            - '.github/workflows/02-fargate-3tier-app-cd.yaml'
+            - '.github/workflows/reusable-python-app-ci.yaml'
+            - '.github/workflows/reusable-fargate-app-cd.yaml'
+            - '.github/actions/ecr-login/**'
+            - '.github/actions/docker-build-push/**'
+            - '.github/actions/ecs-task-definition/**'
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-python-app-ci.yaml
+        with:
+            working-directory: 02-fargate-3tier/app
+    deploy:
+        needs: test
+        uses: ./.github/workflows/reusable-fargate-app-cd.yaml
+        with:
+            cluster: fargate-3tier-dev-cluster
+            service: fargate-3tier-dev-service

@@ -1,0 +1,42 @@
+name: Get ECS task definition
+description: 稼働中サービスのタスク定義を取得する
+
+inputs:
+    cluster:
+        description: ECSクラスタ名
+        required: true
+    service:
+        description: ECSサービス名
+        required: true
+
+outputs:
+    path:
+        description: タスク定義JSONのファイルパス
+        value: ${{ steps.download.outputs.path }}
+
+runs:
+    using: composite
+    steps:
+        - name: Download task definition
+          id: download
+          shell: bash
+          run: |
+            set -eu
+            # https://docs.aws.amazon.com/cli/latest/reference/ecs/describe-services.html
+            task_def="$(aws ecs describe-services \
+              --cluster "${{ inputs.cluster }}" \
+              --services "${{ inputs.service }}" \
+              --query 'services[0].taskDefinition' \
+              --output text)"
+            if [ -z "$task_def" ] || [ "$task_def" = "None" ]; then
+              echo "ECS service ${{ inputs.service }} が ${{ inputs.cluster }} にありません。先に Terraform を apply してください。"
+              exit 1
+            fi
+
+            file="${RUNNER_TEMP}/task-definition.json"
+            # https://docs.aws.amazon.com/cli/latest/reference/ecs/describe-task-definition.html
+            aws ecs describe-task-definition \
+              --task-definition "$task_def" \
+              --query taskDefinition > "$file"
+
+            echo "path=${file}" >> "$GITHUB_OUTPUT"

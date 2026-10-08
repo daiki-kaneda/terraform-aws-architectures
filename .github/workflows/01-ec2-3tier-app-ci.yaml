@@ -1,0 +1,41 @@
+name: 01-ec2-3tier-app CI
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - '01-ec2-3tier/app/**'
+            - '01-ec2-3tier/packer/**'
+            - '.github/workflows/01-ec2-3tier-app-ci.yaml'
+            - '.github/workflows/reusable-python-app-ci.yaml'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-python-app-ci.yaml
+        with:
+            working-directory: 01-ec2-3tier/app
+    packer:
+        name: Validate Packer
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: 01-ec2-3tier/packer
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Setup Packer
+              uses: hashicorp/setup-packer@v3
+            - name: Packer init
+              run: packer init .
+            - name: Packer validate
+              # https://developer.hashicorp.com/packer/docs/templates/hcl_templates/variables#environment-variables
+              env:
+                PKR_VAR_region: ap-northeast-1
+                PKR_VAR_git_sha: ci
+                PKR_VAR_run_id: ci
+              run: packer validate .

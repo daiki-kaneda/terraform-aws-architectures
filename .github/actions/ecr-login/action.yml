@@ -1,0 +1,30 @@
+name: ECR login
+description: ECRへログインし、リポジトリURIを返す
+
+inputs:
+    repository-name:
+        description: ECRリポジトリ名
+        required: true
+
+outputs:
+    repository-uri:
+        description: タグを除いたイメージURI
+        value: ${{ steps.login.outputs.repository-uri }}
+
+runs:
+    using: composite
+    steps:
+        - name: Login
+          id: login
+          shell: bash
+          run: |
+            set -eu
+            # https://docs.aws.amazon.com/cli/latest/reference/ecr/describe-repositories.html
+            repository_uri="$(aws ecr describe-repositories \
+              --repository-names "${{ inputs.repository-name }}" \
+              --query 'repositories[0].repositoryUri' \
+              --output text)"
+            registry="$(echo "$repository_uri" | cut -d '/' -f 1)"
+            # https://docs.aws.amazon.com/cli/latest/reference/ecr/get-login-password.html
+            aws ecr get-login-password | docker login --username AWS --password-stdin "$registry"
+            echo "repository-uri=${repository_uri}" >> "$GITHUB_OUTPUT"

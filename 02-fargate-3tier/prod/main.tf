@@ -15,7 +15,6 @@ module "three_tier" {
   fargate_config = {
     cpu               = var.task_size.cpu
     memory            = var.task_size.memory
-    image             = var.image
     assign_public_ip  = var.assign_public_ip
     use_public_subnet = var.use_public_subnet
     single_az         = var.single_az

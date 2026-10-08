@@ -18,3 +18,13 @@ output "rds_master_user_secret_arn" {
   description = "RDSのパスワードが保存されているSecretManagerのArn。"
   value       = module.three_tier.rds_master_user_secret_arn
 }
+
+output "ecs_cluster_name" {
+  description = "アプリを載せるECSクラスタ名。"
+  value       = module.three_tier.ecs_cluster_name
+}
+
+output "ecs_service_name" {
+  description = "アプリを載せるECSサービス名。"
+  value       = module.three_tier.ecs_service_name
+}

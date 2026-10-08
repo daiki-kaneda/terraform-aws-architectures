@@ -1,0 +1,43 @@
+name: Docker build and push
+description: イメージをビルドしてECRへpushする。同じタグがあればpushしない
+
+inputs:
+    context:
+        description: docker buildのディレクトリ
+        required: true
+    repository-name:
+        description: ECRリポジトリ名
+        required: true
+    repository-uri:
+        description: タグを除いたイメージURI
+        required: true
+    image-tag:
+        description: イメージタグ
+        required: true
+
+outputs:
+    image:
+        description: タグ付きイメージURI
+        value: ${{ steps.build.outputs.image }}
+
+runs:
+    using: composite
+    steps:
+        - name: Build and push
+          id: build
+          shell: bash
+          working-directory: ${{ inputs.context }}
+          run: |
+            set -eu
+            image="${{ inputs.repository-uri }}:${{ inputs.image-tag }}"
+            docker build -t "$image" .
+            # https://docs.aws.amazon.com/cli/latest/reference/ecr/describe-images.html
+            if aws ecr describe-images \
+              --repository-name "${{ inputs.repository-name }}" \
+              --image-ids "imageTag=${{ inputs.image-tag }}" \
+              >/dev/null 2>&1; then
+              echo "already pushed: $image"
+            else
+              docker push "$image"
+            fi
+            echo "image=${image}" >> "$GITHUB_OUTPUT"

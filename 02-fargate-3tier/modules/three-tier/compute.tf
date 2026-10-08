@@ -20,8 +20,9 @@ locals {
     }
   )
 
-  container_name = "app"
-  container_port = 80
+  container_name  = "app"
+  container_port  = 80
+  bootstrap_image = "public.ecr.aws/docker/library/httpd:2.4"
 }
 
 module "ecs_cluster" {
@@ -43,6 +44,10 @@ module "ecs_service" {
   name        = "${var.project_name}-service"
   cluster_arn = module.ecs_cluster.arn
 
+  # 作成後に変えるとサービスが作り直しになる。アプリCDがタスク定義を更新するため、最初から有効にする。
+  # https://registry.terraform.io/modules/terraform-aws-modules/ecs/aws/latest/submodules/service
+  ignore_task_definition_changes = true
+
   cpu    = var.fargate_config.cpu
   memory = var.fargate_config.memory
 
@@ -58,7 +63,7 @@ module "ecs_service" {
 
   container_definitions = {
     (local.container_name) = {
-      image = var.fargate_config.image
+      image = local.bootstrap_image
       portMappings = [
         {
           name          = local.container_name

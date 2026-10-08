@@ -1,0 +1,11 @@
+[Unit]
+Description=ec2-3tier FastAPI
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/app
+ExecStart=/usr/bin/python3.12 -m uvicorn app.main:app --host 0.0.0.0 --port 80
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
