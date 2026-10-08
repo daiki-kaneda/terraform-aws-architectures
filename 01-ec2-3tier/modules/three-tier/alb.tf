@@ -34,6 +34,7 @@ module "alb" {
   source = "terraform-aws-modules/alb/aws"
 
   name    = var.project_name
+  enable_deletion_protection = false
   vpc_id  = module.vpc.vpc_id
   subnets = module.vpc.public_subnets
 
