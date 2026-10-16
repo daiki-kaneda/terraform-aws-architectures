@@ -1,7 +1,7 @@
 module "three_tier" {
-  source = "../modules/three-tier"
+  source = "../../modules/three-tier"
 
-  project_name = "ec2-3tier-prod"
+  project_name = "fargate-3tier-prod"
 
   vpc_config = {
     cidr               = "10.1.0.0/16"
@@ -12,13 +12,28 @@ module "three_tier" {
     enable_nat_gateway = var.enable_nat_gateway
   }
 
-  asg_config = {
-    instance_type     = var.instance_type
-    min_size          = var.min_size
-    max_size          = var.max_size
-    desired_capacity  = var.desired_capacity
+  fargate_config = {
+    cpu               = var.task_size.cpu
+    memory            = var.task_size.memory
+    assign_public_ip  = var.assign_public_ip
     use_public_subnet = var.use_public_subnet
     single_az         = var.single_az
+    min_capacity      = var.min_capacity
+    max_capacity      = var.max_capacity
+    capacity_provider_strategy = {
+      fargate = {
+        weight = var.fargate_weight
+        base   = var.fargate_base
+      }
+      fargate_spot = one([
+        for weight in [var.fargate_spot_weight] : {
+          weight = weight
+        }
+        if weight != null
+      ])
+    }
+    enable_execute_command = var.enable_execute_command
+    log_retention_in_days  = var.log_retention_in_days
   }
 
   rds_config = {

@@ -1,5 +1,5 @@
 module "three_tier" {
-  source = "../modules/three-tier"
+  source = "../../modules/three-tier"
 
   project_name = "ec2-3tier-dev"
 

@@ -11,7 +11,7 @@ Terraform で AWS の定番構成を作り、Github ActionsによるCICDワー�
 - 各プロジェクトで使いまわせるECRリポジトリ
 
 ### `01-ec2-3tier/`
-- dev/,prod/で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
+- environments/dev, environments/prod で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
 - ALB+EC2+RDSの定番構成
 - アプリケーションはHello Worldを返すシンプルなFast API
 - アプリケーションのCDはTerraformと独立させている。具体的には以下のステップ
@@ -20,7 +20,7 @@ Terraform で AWS の定番構成を作り、Github ActionsによるCICDワー�
   - ASGをAWS CLIを使って、instance refreshさせる。
 
 ### `02-fargate-3tier/`
-- dev/,prod/で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
+- environments/dev, environments/prod で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
 - ALB+Fargate+RDSの定番構成
 - アプリケーションはHello Worldを返すシンプルなFast API
 - アプリケーションのCDはTerraformと独立させている。具体的には以下のステップ
@@ -34,7 +34,7 @@ Terraform で AWS の定番構成を作り、Github ActionsによるCICDワー�
 以下を追加予定
 WIP
 
-- dev/,prod/で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
+- environments/dev, environments/prod で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
 - API Gateway + Lambda + DynamoDBの定番構成
 - アプリケーションの CDはTerraformと独立させて、以下を行う
   - ラムダファイルを依存関係を含めてzip化
