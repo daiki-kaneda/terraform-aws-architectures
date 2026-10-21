@@ -1,0 +1,18 @@
+# https://docs.aws.amazon.com/ja_jp/apigateway/latest/developerguide/http-api-open-api.html
+# https://spec.openapis.org/oas/v3.0.0.html
+
+openapi: "3.0.1"
+info:
+  title: serverless-api
+  version: "1.0.0"
+paths:
+  /:
+    get:
+      responses:
+        "200":
+          description: Hello
+      x-amazon-apigateway-integration:
+        payloadFormatVersion: "2.0"
+        type: aws_proxy
+        httpMethod: POST
+        uri: arn:aws:apigateway:ap-northeast-1:lambda:path/2015-03-31/functions/__LAMBDA_ARN__/invocations
