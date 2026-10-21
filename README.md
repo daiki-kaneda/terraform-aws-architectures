@@ -35,7 +35,7 @@ Terraform で AWS の定番構成を作り、Github ActionsによるCICDワー�
 WIP
 
 - environments/dev, environments/prod で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
-- API Gateway + Lambda + DynamoDBの定番構成
+- CloudFront + HTTP API + Lambda + DynamoDBの定番構成。キャッシュの差はCloudFront側で付ける
 - アプリケーションの CDはTerraformと独立させて、以下を行う
   - ラムダファイルを依存関係を含めてzip化
   - S3(Terraform管理)にアップロード
