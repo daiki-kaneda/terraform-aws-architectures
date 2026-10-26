@@ -1,0 +1,22 @@
+name: 03-serverless-api-dev CD
+
+on: 
+    push:
+        branches: 
+            - main
+        paths:
+            - '03-serverless-api/environments/dev/**'
+            - '03-serverless-api/modules/**'
+            - '03-serverless-api/app/openapi.yaml'
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+    pull-requests: write
+
+jobs: 
+    plan:
+        uses: ./.github/workflows/reusable-terraform-cd-dev.yaml
+        with:
+            working-directory: 03-serverless-api/environments/dev/
