@@ -1,0 +1,55 @@
+# push ではテストだけ行う。Lambda の更新は手動実行のときだけ。
+name: 03-serverless-api-app-prod CD
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - '03-serverless-api/app/**'
+            - '.github/workflows/03-serverless-api-app-prod-cd.yaml'
+            - '.github/workflows/reusable-python-app-ci.yaml'
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-python-app-ci.yaml
+        with:
+            working-directory: 03-serverless-api/app
+    deploy:
+        name: Deploy
+        needs: test
+        if: github.event_name == 'workflow_dispatch'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with:
+                  role-to-assume: ${{ vars.APPLY_ROLE_ARN }}
+                  aws-region: ${{ vars.REGION }}
+            - name: Setup Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+            - name: Install dependencies
+              working-directory: 03-serverless-api
+              run: |
+                  mkdir package
+                  python -m pip install -r app/requirements.txt -t package
+                  cp -r app package/app
+                  rm -rf package/app/tests
+            - name: Deploy Lambda
+              uses: aws-actions/aws-lambda-deploy@v1
+              with:
+                  function-name: serverless-api-prod-api
+                  code-artifacts-dir: 03-serverless-api/package
+                  handler: app.handler.lambda_handler
+                  runtime: python3.13
+                  architectures: arm64
+                  timeout: 5

@@ -1,0 +1,21 @@
+name: 03-serverless-api-app CI
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - '03-serverless-api/app/**'
+            - '.github/workflows/03-serverless-api-app-ci.yaml'
+            - '.github/workflows/reusable-python-app-ci.yaml'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-python-app-ci.yaml
+        with:
+            working-directory: 03-serverless-api/app
+            run-ruff: true
