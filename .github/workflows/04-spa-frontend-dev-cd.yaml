@@ -1,0 +1,21 @@
+name: 04-spa-frontend-dev CD
+
+on: 
+    push:
+        branches: 
+            - main
+        paths:
+            - '04-spa-frontend/environments/dev/**'
+            - '04-spa-frontend/modules/**'
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+    pull-requests: write
+
+jobs: 
+    plan:
+        uses: ./.github/workflows/reusable-terraform-cd-dev.yaml
+        with:
+            working-directory: 04-spa-frontend/environments/dev/
