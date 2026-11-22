@@ -1,0 +1,20 @@
+name: 04-spa-frontend-app CI
+
+on:
+    pull_request:
+        branches:
+            - main
+        paths:
+            - '04-spa-frontend/app/**'
+            - '.github/workflows/04-spa-frontend-app-ci.yaml'
+            - '.github/workflows/reusable-node-app-ci.yaml'
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-node-app-ci.yaml
+        with:
+            working-directory: 04-spa-frontend/app

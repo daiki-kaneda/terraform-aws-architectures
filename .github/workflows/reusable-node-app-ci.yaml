@@ -1,0 +1,35 @@
+# アプリディレクトリで依存関係を入れて、テストと型チェックを行う。
+name: Reusable Node App CI
+
+on:
+    workflow_call:
+        inputs:
+            working-directory:
+                type: string
+                required: true
+
+permissions:
+    contents: read
+
+jobs:
+    test:
+        name: Test
+        runs-on: ubuntu-latest
+        defaults:
+            run:
+                working-directory: ${{ inputs.working-directory }}
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: npm
+                  cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+            - name: Install
+              run: npm ci
+            - name: Test
+              run: npm test
+            - name: Typecheck
+              run: npm run typecheck
