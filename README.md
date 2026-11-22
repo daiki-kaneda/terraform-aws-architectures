@@ -46,7 +46,7 @@ WIP
 WIP
 
 - environments/dev, environments/prod で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
-- CloudFront + S3の定番構成
+- CloudFront + S3の定番構成。ファイルは非公開のS3に置き、OACでCloudFrontだけが読む。WAFと独自ドメイン用のRoute 53は任意
 - アプリケーションは03のAPIを呼んで Hello World を表示するSPA。画面はそれだけで、Vite + TypeScript（React または Vue）、テスト、CI/CDは省かない
 - ブラウザから03を呼ぶので、SPAのオリジンは03のCORSで許可する
 - アプリケーションのCIは pull request でテストと型チェックを行う
