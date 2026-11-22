@@ -45,8 +45,12 @@ WIP
 以下を追加予定
 WIP
 
-- CloudFront+S3の定番構成
-- S3で配信する静的ウェブサイトでは03のAPIを使用する(?)
-- フロントエンドのTerraformから独立させたCDは以下の様にする
-  - aws s3 syncで配信用S３を上書き
-  - CloudFrontのキャッシュをinvalidate
+- environments/dev, environments/prod で二つのTerraformプロジェクトで環境を分ける（共通モジュールを実装して共有する）
+- CloudFront + S3の定番構成
+- アプリケーションは03のAPIを呼んで Hello World を表示するSPA。画面はそれだけで、Vite + TypeScript（React または Vue）、テスト、CI/CDは省かない
+- ブラウザから03を呼ぶので、SPAのオリジンは03のCORSで許可する
+- アプリケーションのCIは pull request でテストと型チェックを行う
+- アプリケーションのCDはTerraformと独立させ、以下を行う
+  - Viteでフロントエンドをビルドする
+  - aws s3 syncで配信用S3を上書きする
+  - CloudFrontのキャッシュをinvalidateする
