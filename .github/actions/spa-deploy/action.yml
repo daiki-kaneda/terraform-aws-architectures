@@ -1,0 +1,48 @@
+name: SPA build and deploy
+description: フロントエンドをビルドし、S3へ同期してCloudFrontのキャッシュを無効化する
+
+inputs:
+    working-directory:
+        description: package.jsonがあるディレクトリ
+        required: true
+    bucket-name:
+        description: 配信用S3バケット名
+        required: true
+    distribution-id:
+        description: キャッシュを無効化するCloudFrontディストリビューションID
+        required: true
+    api-base-url:
+        description: ビルド時に埋め込むAPIのURL
+        required: true
+
+runs:
+    using: composite
+    steps:
+        - name: Require deploy settings
+          shell: bash
+          run: |
+              test -n "${{ inputs.bucket-name }}"
+              test -n "${{ inputs.distribution-id }}"
+              test -n "${{ inputs.api-base-url }}"
+        - name: Setup Node
+          uses: actions/setup-node@v4
+          with:
+              node-version: "22"
+              cache: npm
+              cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+        - name: Install
+          shell: bash
+          working-directory: ${{ inputs.working-directory }}
+          run: npm ci
+        - name: Build
+          shell: bash
+          working-directory: ${{ inputs.working-directory }}
+          env:
+              VITE_API_BASE_URL: ${{ inputs.api-base-url }}
+          run: npm run build
+        - name: Deploy
+          shell: bash
+          working-directory: ${{ inputs.working-directory }}
+          run: |
+              aws s3 sync dist "s3://${{ inputs.bucket-name }}" --delete
+              aws cloudfront create-invalidation --distribution-id "${{ inputs.distribution-id }}" --paths "/*"

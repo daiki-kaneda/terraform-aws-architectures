@@ -1,0 +1,43 @@
+# push ではテストだけ行う。静的ファイルの更新は手動実行のときだけ。
+name: 04-spa-frontend-app-prod CD
+
+on:
+    push:
+        branches:
+            - main
+        paths:
+            - '04-spa-frontend/app/**'
+            - '.github/workflows/04-spa-frontend-app-prod-cd.yaml'
+            - '.github/workflows/reusable-node-app-ci.yaml'
+            - '.github/actions/spa-deploy/**'
+    workflow_dispatch:
+
+permissions:
+    id-token: write
+    contents: read
+
+jobs:
+    test:
+        uses: ./.github/workflows/reusable-node-app-ci.yaml
+        with:
+            working-directory: 04-spa-frontend/app
+    deploy:
+        name: Deploy
+        needs: test
+        if: github.event_name == 'workflow_dispatch'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v7
+            - name: Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v6
+              with:
+                  role-to-assume: ${{ vars.APPLY_ROLE_ARN }}
+                  aws-region: ${{ vars.REGION }}
+            - name: Deploy SPA
+              uses: ./.github/actions/spa-deploy
+              with:
+                  working-directory: 04-spa-frontend/app
+                  bucket-name: ${{ vars.SPA_PROD_BUCKET_NAME }}
+                  distribution-id: ${{ vars.SPA_PROD_DISTRIBUTION_ID }}
+                  api-base-url: ${{ vars.SPA_PROD_API_BASE_URL }}
