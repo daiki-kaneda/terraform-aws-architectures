@@ -8,4 +8,6 @@
 
 `enable_waf` をfalseにすると Web ACL は作りません。入れると、共通ルール、既知の悪意ある入力、IP レピュテーションのマネージドルールを付けます。
 
-キャッシュを切ると `CachingDisabled`、入れると `CachingOptimized` です。存在しないパスは `index.html` に戻します。S3 は無いキーに 403 を返すためです。
+キャッシュを切ると `CachingDisabled`、入れると `CachingOptimized` です。
+
+S3 に無いパスは 403 になります。CloudFront はその中身を `/index.html` にし、ステータスは 200 にします。ブラウザのアドレスはそのままなので、画面が増えたとき TanStack Router は `/items/1` のようなパスを読めます。無い `.js` や `.css` も同じ応答になります。このディストリビューションに API は載せません。
